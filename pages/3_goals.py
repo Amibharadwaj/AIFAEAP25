@@ -195,7 +195,12 @@ if st.session_state.guest_data['goals']:
                             st.success("✅ On track!")
                         else:
                             days_over = (realistic_date_obj - target_date_obj).days
-                            st.warning(f"⚠️ {days_over} days over target")
+                            st.warning(f"⚠️ **Timeline Adjustment Needed**")
+                            st.markdown(f"""
+                                Based on your monthly surplus of **₹{monthly_surplus:,.0f}**, 
+                                you will achieve this by **{realistic_date}** 
+                                ({days_over} days later than planned).
+                            """)
             else:
                 st.success("🎉 Goal achieved!")
             
