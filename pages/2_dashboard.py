@@ -243,11 +243,23 @@ else:
     
     with breakdown_col1:
         st.subheader(f"💰 Assets: ₹{metrics['total_assets']:,.0f}")
+        
+        # Show Savings
+        current_savings = snapshot.get('current_savings', 0)
+        has_assets = False
+        
+        if current_savings > 0:
+            percentage = (current_savings / metrics['total_assets'] * 100) if metrics['total_assets'] > 0 else 0
+            st.write(f"• **Cash & Savings**: ₹{current_savings:,.0f} ({percentage:.1f}%)")
+            has_assets = True
+            
         if st.session_state.guest_data['assets']:
             for asset in st.session_state.guest_data['assets']:
                 percentage = (asset['value'] / metrics['total_assets'] * 100) if metrics['total_assets'] > 0 else 0
                 st.write(f"• **{asset['name']}**: ₹{asset['value']:,.0f} ({percentage:.1f}%)")
-        else:
+            has_assets = True
+            
+        if not has_assets:
             st.caption("No assets added yet")
     
     with breakdown_col2:
