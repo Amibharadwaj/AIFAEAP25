@@ -65,7 +65,7 @@ class RagService:
             print("WARNING: OPENROUTER_API_KEY not found. RAG queries will fail.")
             
         Settings.llm = OpenAI(
-            model="mistralai/mistral-7b-instruct", # Cost-effective model
+            model="gpt-4", # Cost-effective model
             api_key=api_key,
             api_base="https://openrouter.ai/api/v1",
             temperature=0.1,
@@ -151,6 +151,56 @@ class RagService:
         # simpler to track via session state or database in MVP
         # But we can try to look at uploads folder
         return os.listdir(self.UPLOAD_DIR)
+
+    def extract_financial_data(self, file_path: str) -> dict:
+        """
+        Extract structured financial data from a document using LLM.
+        """
+        try:
+            # 1. Load document text
+            docs = SimpleDirectoryReader(input_files=[file_path]).load_data()
+            text_content = "\n".join([d.text for d in docs])[:10000] # Truncate for token limits
+            
+            # 2. Prompt for extraction
+            prompt = f"""
+            You are a financial data extraction AI. 
+            Analyze the following document text and extract financial metrics into valid JSON format.
+            Return ONLY the JSON object, no markdown formatting.
+            
+            Structure to extract:
+            {{
+                "snapshot": {{
+                    "monthly_income": <number or 0>,
+                    "monthly_expenses": <number or 0>,
+                    "current_savings": <number or 0>
+                }},
+                "assets": [
+                    {{ "type": "stock/mutual_fund/bank/real_estate/gold/other", "name": "<name>", "value": <number> }}
+                ],
+                "liabilities": [
+                    {{ "type": "loan/credit_card/mortgage/other", "name": "<name>", "outstanding": <number>, "interest_rate": <decimal 0-1> }}
+                ]
+            }}
+            
+            Document Text:
+            {text_content}
+            """
+            
+            # 3. Call LLM
+            response = Settings.llm.complete(prompt)
+            response_text = str(response).strip()
+            
+            # 4. Parse JSON
+            import json
+            import re
+            
+            # Clean potential markdown code blocks
+            json_str = re.sub(r'```json\s*|\s*```', '', response_text)
+            return json.loads(json_str)
+            
+        except Exception as e:
+            print(f"Extraction error: {e}")
+            return {}
 
 # Global instance
 rag_service = RagService()

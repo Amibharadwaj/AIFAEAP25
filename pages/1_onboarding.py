@@ -54,17 +54,17 @@ with st.form("snapshot_form"):
     with col1:
         monthly_income = st.number_input(
             "💵 Monthly Income (₹)",
-            min_value=0,
-            value=st.session_state.guest_data['snapshot'].get('monthly_income', 0),
-            step=1000,
+            min_value=0.0,
+            value=float(st.session_state.guest_data['snapshot'].get('monthly_income', 0.0)),
+            step=1000.0,
             help="Your total monthly income (salary, business income, etc.)"
         )
         
         monthly_expenses = st.number_input(
             "💸 Monthly Expenses (₹)",
-            min_value=0,
-            value=st.session_state.guest_data['snapshot'].get('monthly_expenses', 0),
-            step=1000,
+            min_value=0.0,
+            value=float(st.session_state.guest_data['snapshot'].get('monthly_expenses', 0.0)),
+            step=1000.0,
             help="Your total monthly spending (rent, bills, groceries, etc.)"
         )
     
@@ -83,9 +83,9 @@ with st.form("snapshot_form"):
         st.markdown("")
         existing_savings = st.number_input(
             "💰 Existing Savings Balance (₹)",
-            min_value=0,
-            value=st.session_state.guest_data['snapshot'].get('current_savings', 0),
-            step=5000,
+            min_value=0.0,
+            value=float(st.session_state.guest_data['snapshot'].get('current_savings', 0.0)),
+            step=5000.0,
             help="Total money you already have saved (bank accounts, FDs, liquid funds)"
         )
     
@@ -101,10 +101,10 @@ with st.form("snapshot_form"):
                 'current_savings': existing_savings,
             }
             
-            # Save to database if logged in
-            if st.session_state.user_id:
-                from services.data_service import DataService
-                DataService.save_snapshot(st.session_state.user_id, st.session_state.guest_data['snapshot'])
+            # Save to database if logged in or guest
+            if st.session_state.get("user"):
+                from services.auth_service import AuthService
+                AuthService.save_guest_data(st.session_state.user["user_id"], st.session_state.guest_data)
             
             st.success("✅ Snapshot saved!")
             st.session_state.onboarding_step = 2
@@ -200,14 +200,13 @@ if st.session_state.get('onboarding_step', 1) >= 2:
         
         st.session_state.guest_data['analysis'] = analysis
         
-        # Save to database if logged in
-        if st.session_state.user_id:
-            from services.data_service import DataService
-            DataService.save_assets(st.session_state.user_id, st.session_state.guest_data['assets'])
-            DataService.save_liabilities(st.session_state.user_id, st.session_state.guest_data['liabilities'])
-        
+        # Save to database if logged in or guest
+        if st.session_state.get("user"):
+            from services.auth_service import AuthService
+            AuthService.save_guest_data(st.session_state.user["user_id"], st.session_state.guest_data)
+            
         st.success("✅ Analysis complete!")
-        if st.session_state.user_id:
+        if st.session_state.get("user"):
             st.info("💾 Data saved to your account!")
         st.balloons()
         

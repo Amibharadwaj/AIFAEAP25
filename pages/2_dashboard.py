@@ -30,6 +30,20 @@ with st.sidebar:
 st.title("📊 Your Financial Dashboard")
 
 # Check if analysis exists
+# Auto-calculate if data exists but analysis is missing (for returning guests)
+if 'guest_data' in st.session_state and st.session_state.guest_data.get('snapshot') and not st.session_state.guest_data.get('analysis'):
+    from services.calculator import FinancialCalculator
+    try:
+        analysis = FinancialCalculator.analyze_financial_health(
+            st.session_state.guest_data['snapshot'],
+            st.session_state.guest_data['assets'],
+            st.session_state.guest_data['liabilities']
+        )
+        st.session_state.guest_data['analysis'] = analysis
+        st.rerun()
+    except Exception as e:
+        print(f"Auto-calc error: {e}")
+
 if 'guest_data' not in st.session_state or not st.session_state.guest_data.get('analysis'):
     st.warning("⚠️ No analysis data available. Please complete the onboarding first!")
     if st.button("📝 Go to Onboarding"):

@@ -71,15 +71,50 @@ with st.expander("📂 Document Management", expanded=not st.session_state.uploa
                         
                         for file in uploaded_files:
                             st.write(f"Processing {file.name}...")
+                            file_path = os.path.join(rag_service.UPLOAD_DIR, file.name)
                             success = rag_service.process_file(file.getvalue(), file.name)
+                            
                             if success:
                                 st.write(f"✅ Indexed {file.name}")
                                 if file.name not in st.session_state.uploaded_docs:
                                     st.session_state.uploaded_docs.append(file.name)
+                                
+                                # Auto-Extract Data
+                                st.write(f"🔍 Analyzing {file.name} for financial data...")
+                                try:
+                                    # Need full path for extraction
+                                    data = rag_service.extract_financial_data(file_path)
+                                    if data:
+                                        # Merge Snapshot (Overwrite if non-zero)
+                                        snap = data.get('snapshot', {})
+                                        if snap.get('monthly_income', 0) > 0:
+                                            st.session_state.guest_data['snapshot']['monthly_income'] = snap['monthly_income']
+                                        if snap.get('monthly_expenses', 0) > 0:
+                                            st.session_state.guest_data['snapshot']['monthly_expenses'] = snap['monthly_expenses']
+                                        if snap.get('current_savings', 0) > 0:
+                                            st.session_state.guest_data['snapshot']['current_savings'] = snap['current_savings']
+                                            
+                                        # Extend Arrays
+                                        if data.get('assets'):
+                                            st.session_state.guest_data['assets'].extend(data['assets'])
+                                        if data.get('liabilities'):
+                                            st.session_state.guest_data['liabilities'].extend(data['liabilities'])
+                                            
+                                        st.success(f"📊 Updated dashboard with data from {file.name}")
+                                except Exception as e:
+                                    print(f"Extraction failed: {e}")
+                                    
                             else:
                                 st.error(f"❌ Failed to process {file.name}")
                         
+                        # Save changes
+                        if st.session_state.get("user"):
+                            from services.auth_service import AuthService
+                            AuthService.save_guest_data(st.session_state.user["user_id"], st.session_state.guest_data)
+                            st.toast("Dashboard updated & saved!", icon="💾")
+                        
                         st.success("✅ Documents Processed!")
+                        st.session_state.rag_chat_history.append({"role": "assistant", "content": "I've processed your documents and updated your dashboard with any financial data I found. You can now ask me questions about them!"})
                         st.rerun()
                     except Exception as e:
                         st.error(f"Failed to initialize RAG service: {str(e)}")

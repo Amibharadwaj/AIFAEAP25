@@ -36,6 +36,7 @@ class User(Base):
     name = Column(String(100), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     last_login_at = Column(DateTime, nullable=True)
+    is_guest = Column(Integer, default=0, nullable=False) # 0=False, 1=True (Boolean in SQLite)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
     
     # Relationships

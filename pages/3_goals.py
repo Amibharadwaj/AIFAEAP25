@@ -90,8 +90,14 @@ with st.expander("➕ Add New Goal", expanded=len(st.session_state.guest_data['g
                     'target_date': (datetime.now() + timedelta(days=months*30)).strftime("%Y-%m-%d"),
                     'category': category,
                     'required_monthly': required_monthly if 'required_monthly' in locals() else 0,
-                    'created_at': datetime.now().strftime("%Y-%m-%d")
+                'created_at': datetime.now().strftime("%Y-%m-%d")
                 })
+                
+                # Save execution
+                if st.session_state.get("user"):
+                    from services.auth_service import AuthService
+                    AuthService.save_guest_data(st.session_state.user["user_id"], st.session_state.guest_data)
+                    
                 st.success(f"✅ Added goal: {goal_name}")
                 st.rerun()
             else:
@@ -160,6 +166,12 @@ if st.session_state.guest_data['goals']:
             with col4:
                 if st.button("🗑️", key=f"del_goal_{idx}"):
                     st.session_state.guest_data['goals'].pop(idx)
+                    
+                    # Save execution
+                    if st.session_state.get("user"):
+                        from services.auth_service import AuthService
+                        AuthService.save_guest_data(st.session_state.user["user_id"], st.session_state.guest_data)
+                        
                     st.rerun()
                 
                 if st.button("✏️", key=f"edit_goal_{idx}"):

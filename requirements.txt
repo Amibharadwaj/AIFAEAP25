@@ -36,6 +36,7 @@ httpx==0.26.0
 
 # Frontend (Streamlit)
 streamlit==1.30.0
+extra-streamlit-components==0.1.71
 plotly==5.18.0
 pandas==2.1.4
 

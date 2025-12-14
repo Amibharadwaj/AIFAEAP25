@@ -4,6 +4,10 @@ Clean, professional landing page using Streamlit's native components.
 No sidebar, just header, hero, features, and footer.
 """
 import streamlit as st
+import uuid
+import datetime
+import extra_streamlit_components as stx
+from services.auth_service import AuthService
 
 # Configure page - MUST be first
 st.set_page_config(
@@ -12,6 +16,28 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed"  # Hide sidebar on landing
 )
+
+# Cookie Manager (Persist Guest Identity)
+cookie_manager = stx.CookieManager()
+guest_id = cookie_manager.get(cookie="guest_id")
+
+if not guest_id:
+    # Generate new ID if none exists
+    guest_id = str(uuid.uuid4())
+    cookie_manager.set("guest_id", guest_id, expires_at=datetime.datetime.now() + datetime.timedelta(days=365))
+
+# Register/Fetch Guest User
+if guest_id:
+    # Ensure guest exists in DB
+    try:
+        user = AuthService.get_or_create_guest(guest_id)
+        if "user" not in st.session_state:
+            st.session_state.user = user
+    except Exception as e:
+        print(f"Error initializing guest: {e}")
+
+    except Exception as e:
+        print(f"Error initializing guest: {e}")
 
 # Initialize Session State (Prevent KeyErrors)
 if "guest_data" not in st.session_state:
@@ -22,6 +48,13 @@ if "guest_data" not in st.session_state:
         "goals": [],
         "analysis": {}
     }
+    
+    # Try to load persistent data if guest exists
+    if "user" in st.session_state:
+        saved_data = AuthService.load_guest_data(st.session_state.user["user_id"])
+        if saved_data:
+            st.session_state.guest_data = saved_data
+            st.toast("Welcome back! Loaded your saved data.", icon="💾")
 
 # Hide sidebar completely on landing page
 st.markdown("""
