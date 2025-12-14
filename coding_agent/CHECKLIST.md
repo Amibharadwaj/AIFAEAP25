@@ -101,14 +101,14 @@
 ## Phase 2: RAG System Integration (Power User Features) ⏳ NEXT PRIORITY
 
 ### Knowledge Base & Document Management
-- [ ] Setup ChromaDB/Vector Store
-- [ ] Implement document upload UI (PDF, TXT, CSV)
-- [ ] Create document processing pipeline (LlamaIndex)
-- [ ] Setup HuggingFace embeddings (`all-MiniLM-L6-v2`)
+- [x] Setup ChromaDB/Vector Store
+- [x] Implement document upload UI (PDF, TXT, CSV)
+- [x] Create document processing pipeline (LlamaIndex)
+- [x] Setup HuggingFace embeddings (`all-MiniLM-L6-v2`)
 
 ### RAG Pipeline (LlamaIndex + LangChain)
-- [ ] Configure OpenRouter LLM integration
-- [ ] Build retrieval pipeline
+- [x] Configure OpenRouter LLM integration
+- [x] Build retrieval pipeline
 - [ ] Implement context window management
 - [ ] Add citation system (source tracking)
 

@@ -13,6 +13,16 @@ st.set_page_config(
     initial_sidebar_state="collapsed"  # Hide sidebar on landing
 )
 
+# Initialize Session State (Prevent KeyErrors)
+if "guest_data" not in st.session_state:
+    st.session_state.guest_data = {
+        "snapshot": {},
+        "assets": [],
+        "liabilities": [],
+        "goals": [],
+        "analysis": {}
+    }
+
 # Hide sidebar completely on landing page
 st.markdown("""
 <style>
